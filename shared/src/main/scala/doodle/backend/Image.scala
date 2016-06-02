@@ -62,10 +62,15 @@ final case class Circle(r: Double) extends Image
 final case class Rectangle(w: Double, h: Double) extends Image
 
 sealed trait Layout
-final case class On(relativeTo:Image) extends Layout
-final case class Below(relativeTo:Image) extends Layout
-final case class Right(relativeTo:Image) extends Layout
-final case class Left(relativeTo:Image) extends Layout
+sealed trait RelativeLayout extends Layout {
+  def relativeTo:Image
+}
+
+final case class On(relativeTo:Image) extends RelativeLayout
+final case class Below(relativeTo:Image) extends RelativeLayout
+final case class Right(relativeTo:Image) extends RelativeLayout
+final case class Left(relativeTo:Image) extends RelativeLayout
+final case class ExactPosition(x:Double, y:Double) extends Layout
 case object DefaultPosition extends Layout
 
 case class Point(x:Double, y:Double) {
@@ -95,6 +100,7 @@ object Position {
       case Below(r) => Position(r) - Point(0, BoundingBox(a).h)
       case Right(r) => Position(r) + Point(BoundingBox(r).w, 0)
       case Left(r) => Position(r) - Point(BoundingBox(a).w, 0)
+      case ExactPosition(x,y) => Point(x,y)
       case DefaultPosition => Point(0,0)
     }
     p
@@ -114,10 +120,20 @@ object Offset {
 
 object Draw {
   def apply(canvas: Canvas, img:Image): Unit = {
+    drawParent(canvas, img)
     val pos = Position(img) + Offset(img)
     println(pos)
     drawShape(canvas, img, pos)
     colorize(canvas, img)
+  }
+
+  def drawParent(canvas: Canvas, img:Image) = {
+    for (l <- img.get[Layout]) {
+      l match {
+        case la: RelativeLayout => Draw(canvas, la.relativeTo)
+        case _ => ()
+      }
+    }
   }
 
   def drawShape(canvas: Canvas, img:Image, pos:Point):Unit = {
@@ -154,6 +170,17 @@ object DoDraw  {
     Draw(canvas, r)
     Draw(canvas, Rectangle(10,10).set(Color.red).set(On(c)))
     Draw(canvas, c2)
+
+    Draw(canvas,
+      Rectangle(10, 20)
+        .set(Color.blue)
+        .set(On(
+          Circle(10)
+            .set(Color.blue)
+            .set(Left(
+              Rectangle(10,10)
+                .set(Color.red).set(ExactPosition(100,100)))
+            ))))
   }
 }
 
