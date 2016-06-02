@@ -2,8 +2,9 @@ package doodle
 package jvm
 
 import doodle.core._
+import doodle.backend._
 
-object Example {
+object Example  {
   def draw: Unit = {
     val canvas = Java2DCanvas.canvas
 
