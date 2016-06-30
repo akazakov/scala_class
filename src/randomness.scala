@@ -1,10 +1,7 @@
-/**
-  * Created by artemkazakov on 6/30/16.
-  */
 sealed trait Random[A] {
   def run(rng: scala.util.Random):A
   def map[B](f: A => B): Random[B] = {
-    new WithOtherRandom(this, f)
+    new WithF(rng => f(run(rng)))
   }
 
   def flatMap[B](f: A => Random[B]): Random[B] = {
