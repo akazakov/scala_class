@@ -30,10 +30,6 @@ object Random {
 
 case class Point(x:Int, y:Int)
 
-//class RandomPoint extends Random[Point] {
-
-//}
-
 object Test extends App {
   val r = scala.util.Random
   val i = Random.always(1)
