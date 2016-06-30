@@ -1,11 +1,11 @@
 sealed trait Random[A] {
   def run(rng: scala.util.Random):A
   def map[B](f: A => B): Random[B] = {
-    new WithF(rng => f(run(rng)))
+    new Primitive(rng => f(run(rng)))
   }
 
   def flatMap[B](f: A => Random[B]): Random[B] = {
-    new WithF(rng => f(run(rng)).run(rng))
+    new Primitive(rng => f(run(rng)).run(rng))
   }
 
   def zip[B](that: Random[B]): Random[(A,B)] =
@@ -20,17 +20,13 @@ class Always[A](in:A) extends Random[A] {
   def run(rng: scala.util.Random):A = in
 }
 
-class WithF[A](f: scala.util.Random => A) extends Random[A] {
+class Primitive[A](f: scala.util.Random => A) extends Random[A] {
   def run(rng: scala.util.Random):A = f(rng)
 }
 
-class WithOtherRandom[A,B](other:Random[A], f:A => B) extends Random[B] {
-  def run(rng: scala.util.Random):B = f(other.run(rng))
-}
-
 object Random {
-  def int: Random[Int] = new WithF(_.nextInt)
-  def double: Random[Double] = new WithF(_.nextDouble)
+  def int: Random[Int] = new Primitive(_.nextInt)
+  def double: Random[Double] = new Primitive(_.nextDouble)
   def always[A](in:A) = new Always(in)
   def point(x:Random[Int], y:Random[Int]): Random[Point] = x.flatMap(_x => y.map(_y => new Point(_x, _y)))
   def point: Random[Point] = point(Random.int, Random.int)
