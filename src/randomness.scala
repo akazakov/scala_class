@@ -16,10 +16,6 @@ sealed trait Random[A] {
     }
 }
 
-class Always[A](in:A) extends Random[A] {
-  def run(rng: scala.util.Random):A = in
-}
-
 class Primitive[A](f: scala.util.Random => A) extends Random[A] {
   def run(rng: scala.util.Random):A = f(rng)
 }
@@ -27,7 +23,7 @@ class Primitive[A](f: scala.util.Random => A) extends Random[A] {
 object Random {
   def int: Random[Int] = new Primitive(_.nextInt)
   def double: Random[Double] = new Primitive(_.nextDouble)
-  def always[A](in:A) = new Always(in)
+  def always[A](in:A) = new Primitive(_ => in)
   def point(x:Random[Int], y:Random[Int]): Random[Point] = x.flatMap(_x => y.map(_y => new Point(_x, _y)))
   def point: Random[Point] = point(Random.int, Random.int)
 }
