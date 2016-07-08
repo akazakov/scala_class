@@ -27,6 +27,14 @@ object JsWriter {
   }
 }
 
+object JsonSyntax {
+  implicit class JsonNumber[A](val v:A)(implicit writer:JsWriter[A]) {
+    def toJson:JsValue = {
+      writer.write(v)
+    }
+  }
+}
+
 object JsUtil {
   def toJson[A](v:A)(implicit writer:JsWriter[A]) = {
     writer.write(v)
@@ -34,5 +42,8 @@ object JsUtil {
 }
 
 object ttt extends App {
+  import JsonSyntax._
   println(JsUtil.toJson(1))
+  println(1.toJson)
+  println(3.0.toJson)
 }
